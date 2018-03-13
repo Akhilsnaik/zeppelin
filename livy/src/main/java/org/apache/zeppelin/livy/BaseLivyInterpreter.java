@@ -652,19 +652,21 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       }
     }
 
-
+    RestTemplate restTemplate = null;
     if (isSpnegoEnabled) {
       if (httpClient == null) {
-        return new KerberosRestTemplate(keytabLocation, principal);
+        restTemplate = new KerberosRestTemplate(keytabLocation, principal);
       } else {
-        return new KerberosRestTemplate(keytabLocation, principal, httpClient);
+        restTemplate = new KerberosRestTemplate(keytabLocation, principal, httpClient);
       }
     }
     if (httpClient == null) {
-      return new RestTemplate();
+      restTemplate = new RestTemplate();
     } else {
-      return new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
+      restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
+    restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    return restTemplate;
   }
 
   private String callRestAPI(String targetURL, String method) throws LivyException {
